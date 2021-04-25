@@ -1,0 +1,24 @@
+{
+  "name": "employee-tracker-mysql",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattyp1007/employee-tracker-mysql.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "inquirer": "^6.5.0",
+    "mysql": "^2.16.0"
+  },
+  "bugs": {
+    "url": "https://github.com/mattyp1007/employee-tracker-mysql/issues"
+  },
+  "homepage": "https://github.com/mattyp1007/employee-tracker-mysql#readme"
+}
