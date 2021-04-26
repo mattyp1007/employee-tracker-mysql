@@ -30,7 +30,7 @@ const actionPrompt = () => {
       case "View employee data":
         return viewData();
       case "Update employee role":
-        return updateEmployees();
+        return updateEmployeeRole();
       case "Add employee data":
         return addData();
       default:
@@ -47,16 +47,16 @@ const viewData = () => {
     message: "View...",
     choices: ["Employees", "Roles", "Departments", "Never mind"]
   }
-
+  // ask user which data table to view
   inquirer.prompt(questionAdd).then(answer => {
-    switch(answer.add){
+    switch(answer.view){
       case "Employees":
         return viewEmployeesStart();
       case "Roles":
         return viewRoles();
       case "Departments":
         return viewDepartments();
-      case "Never mind":
+      default:
         return actionPrompt();
     }
   });
@@ -95,11 +95,73 @@ const viewEmployeesAll = () => {
 }
 
 const viewEmployeesByDept = () => {
-
+  let queryFilter = viewQuery + " WHERE department.id = ?";
+  let queryDept = "SELECT * FROM department";
+  const question = {
+    type: "input",
+    name: "dept",
+    message: "Enter the ID of the department to filter by:"
+  }
+  connection.query(queryDept, (err, res) => {
+    if (err) throw err;
+    console.log("Displaying departments:")
+    console.table(res);
+    inquirer.prompt(question).then(answer => {
+      connection.query(queryFilter, answer.dept, (err, res) => {
+        if (err) throw err;
+        console.log("Displaying employees in selected department:");
+        console.table(res);
+        actionPrompt();
+      })
+    })
+  })
 }
 
 const viewEmployeesByRole = () => {
+  let queryFilter = viewQuery + " WHERE role.id = ?";
+  const queryRole = "SELECT * FROM role";
+  const question = {
+    type: "input",
+    name: "role",
+    message: "Enter the ID of the role to filter by:"
+  }
+  connection.query(queryRole, (err, res) => {
+    if (err) throw err;
+    console.log("Displaying roles:")
+    console.table(res);
+    inquirer.prompt(question).then(answer => {
+      connection.query(queryFilter, answer.role, (err, res) => {
+        if (err) throw err;
+        console.log("Displaying employees of selected role:");
+        console.table(res);
+        actionPrompt();
+      })
+    })
+  })
+}
+
+const viewRoles = () => {
+  const query = `SELECT role.id, title, department.name, salary
+  FROM role
+  JOIN department
+  ON department_id = department.id`;
   
+  connection.query(query, (err, res) => {
+    if (err) throw err;
+    console.log("Displaying all roles:");
+    console.table(res);
+    actionPrompt();
+  })
+}
+
+const viewDepartments = () => {
+  const query = "SELECT * FROM department";
+  connection.query(query, (err, res) => {
+    if (err) throw err;
+    console.log("Displaying all departments:");
+    console.table(res);
+    actionPrompt();
+  })
 }
 
 // Asks user what to add, sends them to their answer's corresponding set of questions
