@@ -9,7 +9,13 @@ const connection = mysql.createConnection({
   database: 'employees_db'
 });
 
-
+const viewQuery = `
+  SELECT employee.id, first_name, last_name, department.name, role.title, manager_id
+  FROM employee
+  JOIN role
+    ON role.id = role_id
+  JOIN department
+    ON department.id = department_id`;
 
 const actionPrompt = () => {
   const questionAction = {
@@ -45,7 +51,7 @@ const viewData = () => {
   inquirer.prompt(questionAdd).then(answer => {
     switch(answer.add){
       case "Employees":
-        return viewEmployees();
+        return viewEmployeesStart();
       case "Roles":
         return viewRoles();
       case "Departments":
@@ -56,24 +62,45 @@ const viewData = () => {
   });
 }
 
-const viewEmployees = () => {
-
-}
-
-/* const filterView = () => {
+const viewEmployeesStart = () => {
+  
   const questionFilter = {
     type: "list",
     name: "viewFilter",
     message: "View all, or filter by department/role?",
-    choices: ["View all", "Filter by department", "Filter by role"]
+    choices: ["View all", "Filter by department", "Filter by role", "Never mind"]
   }
   inquirer.prompt(questionFilter).then((answer) => {
     switch(answer.viewFilter){
       case "View all":
-        return 
+        return viewEmployeesAll();
+      case "Filter by department":
+        return viewEmployeesByDept();
+      case "Filter by role":
+        return viewEmployeesByRole();
+      default:
+        return actionPrompt();
     }
   })
-} */
+}
+
+const viewEmployeesAll = () => {
+
+  connection.query(viewQuery, (err, res) => {
+    if (err) throw err;
+    console.log("Displaying all employees:");
+    console.table(res);
+    actionPrompt();
+  })
+}
+
+const viewEmployeesByDept = () => {
+
+}
+
+const viewEmployeesByRole = () => {
+  
+}
 
 // Asks user what to add, sends them to their answer's corresponding set of questions
 const addData = () => {
