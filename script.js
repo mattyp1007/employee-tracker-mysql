@@ -16,17 +16,17 @@ const actionPrompt = () => {
     type: "list",
     name: "action",
     message: "What would you like to do?",
-    choices: ["View something", "Update employee role", "Add something", "Quit"]
+    choices: ["View employee data", "Add employee data", "Update employee role",  "Quit"]
   }
 
   inquirer.prompt(questionAction).then((answer) => {
     switch(answer.action){
-      case "View something":
-        return viewSomething();
+      case "View employee data":
+        return viewData();
       case "Update employee role":
         return updateEmployees();
-      case "Add something":
-        return addSomething();
+      case "Add employee data":
+        return addData();
       default:
         console.log("Goodbye!");
         return connection.end();
@@ -34,7 +34,7 @@ const actionPrompt = () => {
   })
 }
 
-const viewSomething = () => {
+const viewData = () => {
   const questionAdd = {
     type: "list",
     name: "view",
@@ -57,7 +57,7 @@ const viewSomething = () => {
 }
 
 const viewEmployees = () => {
-  
+
 }
 
 /* const filterView = () => {
@@ -76,7 +76,7 @@ const viewEmployees = () => {
 } */
 
 // Asks user what to add, sends them to their answer's corresponding set of questions
-const addSomething = () => {
+const addData = () => {
   const questionAdd = {
     type: "list",
     name: "add",
@@ -99,13 +99,127 @@ const addSomething = () => {
 }
 
 const addEmployee = () => {
+  const questionAddEmp = [
+    {
+      type: "input",
+      name: "first",
+      message: "Enter employee's first name:"
+    },
+    {
+      type: "input",
+      name: "last",
+      message: "Enter employee's last name:"
+    },
+  ];
+  // get the employee's first and last name
+  inquirer.prompt(questionAddEmp).then(nameAnswers => {
+    // then show the user the list of departments to select from
+    connection.query("SELECT * FROM department", (err, res) => {
+      if (err) throw err;
+      console.log("Here are all the deprtments:");
+      console.table(res);
+      
+      const questionPickDept = {
+        type: "input",
+        name: "dept",
+        message: "Enter the ID of the department this new employee is in:"
+      }
+      // get the employee's department
+      inquirer.prompt(questionPickDept).then(deptAnswer => {
+        // then show the roles in that department
+        const query1 = "SELECT id, title, salary FROM role WHERE department_id = ?";
+        connection.query(query1, deptAnswer.dept, (err, res) => {
+          if (err) throw err;
+          console.log("Here are the roles in that department:");
+          console.table(res);
 
+          const questionPickRole = {
+            type: "input",
+            name: "role",
+            message: "Enter the role ID for this new employee:"
+          }
+          // get employee's role
+          inquirer.prompt(questionPickRole).then(roleAnswer => {
+            const query2 = 
+              `SELECT employee.id, first_name, last_name, title
+              FROM employee
+              JOIN role
+                ON role_id = role.id
+              WHERE department_id = ?`;
+            // display existing employees in selected dept to pick manager ID
+            connection.query(query2, deptAnswer.dept, (err, res) => {
+              if (err) throw err;
+              console.log("Displaying current employees in selected department:");
+              console.table(res);
+
+              const questionManager = {
+                type: "input",
+                name: "manager",
+                message: "Enter the ID of the new employee's manager:"
+              }
+              // get the manager ID
+              inquirer.prompt(questionManager).then(managerAnswer => {
+                // insert object into employee table
+                connection.query("INSERT INTO employee SET ?",
+                {
+                  first_name: nameAnswers.first,
+                  last_name: nameAnswers.last,
+                  role_id: roleAnswer.role,
+                  manager_id: managerAnswer.manager
+                }, (err, res) => {
+                  if (err) throw err;
+                  console.log("Employee successfully added!");
+                  actionPrompt();
+                })
+              })
+            })  
+          })
+        })
+      })
+    })
+  })
 }
 
 const addRole = () => {
-  const questionAddRole = {
+  const query1 = "SELECT * FROM department";
+  connection.query(query1, (err, res) => {
+    if (err) throw err;
+    console.log("Displaying all departments:");
+    console.table(res);
 
-  }
+    const questionAddRole = [
+      {
+      type: "input",
+      name: "dept",
+      message: "Enter the ID of the new role's department:"
+      },
+      {
+        type: "input",
+        name: "roleName",
+        message: "Enter the new role's name:"
+      },
+      {
+        type: "input",
+        name: "roleSalary",
+        message: "Enter the new role's salary:"
+      }
+    ];
+    inquirer.prompt(questionAddRole).then(answers => {
+      const query2 = "INSERT INTO role SET ?"
+      connection.query(query2, 
+      {
+        title: answers.roleName,
+        salary: answers.roleSalary,
+        department_id: answers.dept
+      }, 
+      (err, res) => {
+        if (err) throw err;
+        console.log(`The role of ${answers.roleName} was successfully added!`);
+        actionPrompt();
+      })
+    })
+  })
+
 }
 
 // Allows user to add a new department
@@ -119,7 +233,7 @@ const addDepartment = () => {
     connection.query("INSERT INTO department SET ?",
     {name: answer.dept},
     (err) => {
-      if(err) console.log(err);
+      if (err) throw err;
       console.log("Department successfully added!");
       actionPrompt();
     })
