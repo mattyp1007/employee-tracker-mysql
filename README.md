@@ -1,1 +1,4 @@
 # employee-tracker-mysql
+
+## Description
+This is a command line application using Node.js to manage an employee database on MySQL. The database schema has three tables: employee (id, first_name, last_name, role_id, manager_id), role (id, title, salary, department_id), and department (id, name). The user has a variety of actions at their disposal, including view employees (with options to filter by department or role), view departments/roles, add employees/roles/departments, and update employees' roles. The user interaction is done with the help of the Inquirer node package, and the database communication is done with the help of the mysql node package.

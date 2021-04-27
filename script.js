@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
 });
 
 const viewQuery = `
-  SELECT employee.id, first_name, last_name, department.name, role.title, manager_id
+  SELECT employee.id, first_name, last_name, department.name AS department_name, role.title, manager_id
   FROM employee
   JOIN role
     ON role.id = role_id
