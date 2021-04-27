@@ -329,6 +329,41 @@ const addDepartment = () => {
   })
 }
 
+const updateEmployeeRole = () => {
+  const queryRole = "SELECT * FROM role";
+  const queryEmp = "SELECT * FROM employee";
+  const queryUpdate = "UPDATE employee SET role_id = ? WHERE employee.id = ?"
+  const questionEmp = {
+    type: "input",
+    name: "employee",
+    message: "Enter the ID of the employee whose role you wish to change:"
+  }
+  const questionNewRole = {
+    type: "input",
+    name: "role",
+    message: "Enter the ID of the employee's new role:"
+  }
+  connection.query(queryEmp, (err, res) => {
+    if (err) throw err;
+    console.log("Displaying all employees:");
+    console.table(res);
+    inquirer.prompt(questionEmp).then(answer1 => {
+      connection.query(queryRole, (err, res) => {
+        if (err) throw err;
+        console.log("Displaying all roles:");
+        console.table(res);
+        inquirer.prompt(questionNewRole).then(answer2 => {
+          connection.query(queryUpdate, [answer2.role, answer1.employee], (err, res) => {
+            if (err) throw err;
+            console.log("Employee role update successful!");
+            actionPrompt();
+          })
+        })
+      })
+    })
+  })
+}
+
 const startProgram = () => {
   actionPrompt();
   
